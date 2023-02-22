@@ -1,0 +1,28 @@
+{
+    "index_terms": {
+        "index_terms": {
+            "quick": [
+                "foxes.txt"
+            ],
+            "brown": [
+                "brown eagle.txt"
+            ],
+            "fox": [
+                "foxes.txt"
+            ],
+            "eagle": [
+                "eagle.txt",
+                "brown eagle.txt"
+            ],
+            "wolf": [
+                "wolfs.txt"
+            ],
+            "prey": [
+                "eagle.txt",
+                "wolfs.txt",
+                "foxes.txt"
+            ]
+        }
+    },
+    "new_index_terms_allowed": false
+}

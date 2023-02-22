@@ -1,0 +1,9 @@
+python main.py init-index-terms initial_index_terms.json
+python main.py index-text-corpus
+
+python main.py search '"eagle" | "prey" & "fox" | "wolf"'
+
+python main.py search '"eagle" | "prey" & "fox" & "wolf"'
+python main.py search '"eagle" & "prey"'
+python main.py search '"eagle"'
+python main.py search '"quick" & "prey" & "non-existent term"'
