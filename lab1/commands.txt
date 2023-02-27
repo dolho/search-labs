@@ -3,7 +3,15 @@ python main.py index-text-corpus
 
 python main.py search '"eagle" | "prey" & "fox" | "wolf"'
 
-python main.py search '"eagle" | "prey" & "fox" & "wolf"'
-python main.py search '"eagle" & "prey"'
-python main.py search '"eagle"'
-python main.py search '"quick" & "prey" & "non-existent term"'
+python main.py search-boolean '"eagle" | "prey" & "fox" & "wolf"'
+python main.py search-boolean '"eagle" & "prey"'
+python main.py search-boolean '"eagle"'
+python main.py search-boolean '"quick" & "prey" & "non-existent term"'
+
+
+python main.py replace-vector-index-terms
+python main.py index-text-corpus-vector
+python main.py search-vector '"brown" "eagle" "fox"'
+python main.py search-vector '"fox" "nonexistent term"'
+python main.py search-vector '"fox" "prey"'
+python main.py search-vector '"quick" "fox" "prey"'
