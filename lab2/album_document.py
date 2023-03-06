@@ -9,5 +9,9 @@ class Album:
     release_date: date
     musicians: list[str]
     box_office: int
+    description: str
+    critical_reception: str
+    additional_notes: str
 
     _id: Optional[str] = None
+    _score: Optional[float] = None

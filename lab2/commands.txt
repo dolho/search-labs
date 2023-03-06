@@ -2,10 +2,10 @@ sudo systemctl start elasticsearch.service
 
 python main.py set-mapping --force-delete
 
-python main.py index-document --album-name Soulvaki --release-date 1994-02-01 --musicians "Neil Halstead" --musicians "Rachel Goswell" --musicians "Christian Savill" --musicians "Nick Chaplin" --musicians "Simon Scott" --box-office 50000
-python main.py index-document --album-name "Just for a Day" --release-date 1991-06-03 --musicians "Neil Halstead" --musicians "Rachel Goswell" --musicians "Christian Savill" --musicians "Nick Chaplin" --musicians "Simon Scott" --box-office 30000
-python main.py index-document --album-name Loveless --release-date 1991-03-01 --musicians "Bilinda Butcher" --musicians "Debbie Googe" --musicians "Kevin Shields" --box-office 60000
-python main.py index-document --album-name "Iron Maiden" --release-date 1980-04-23 --musicians "Paul Di'Anno" --musicians "Dave Murray" --musicians "Dennis Stratton" --musicians "Steve Harris" --musicians "Clive Burr" --box-office 2500000
+python main.py index-document --album-name Soulvaki --release-date 1994-02-01 --musicians "Neil Halstead" --musicians "Rachel Goswell" --musicians "Christian Savill" --musicians "Nick Chaplin" --musicians "Simon Scott" --box-office 50000 --text-path ./texts/soulvaki
+python main.py index-document --album-name "Just for a Day" --release-date 1991-06-03 --musicians "Neil Halstead" --musicians "Rachel Goswell" --musicians "Christian Savill" --musicians "Nick Chaplin" --musicians "Simon Scott" --box-office 30000 --text-path ./texts/just_for_a_day
+python main.py index-document --album-name Loveless --release-date 1991-03-01 --musicians "Bilinda Butcher" --musicians "Debbie Googe" --musicians "Kevin Shields" --box-office 60000 --text-path ./texts/loveless
+python main.py index-document --album-name "Iron Maiden" --release-date 1980-04-23 --musicians "Paul Di'Anno" --musicians "Dave Murray" --musicians "Dennis Stratton" --musicians "Steve Harris" --musicians "Clive Burr" --box-office 2500000 --text-path ./texts/iron_maiden
 
 
 python main.py search-by-album-name Loveles
@@ -30,7 +30,11 @@ python main.py search
 
 
 python main.py reset-query
-python main.py index-document --album-name "Mongol throat singing feat. Genghis Khan" --release-date 1235-04-23 --musicians "Horse Archer" --musicians "Genghis Khan" --box-office 3
+python main.py index-document --album-name "Mongol throat singing feat. Genghis Khan" --release-date 1235-04-23 --musicians "Horse Archer" --musicians "Genghis Khan" --box-office 3 --text-path ./texts/mongol
 python main.py search
 python main.py delete uuid
+python main.py search
+
+python main.py reset-query
+python main.py add-match must critical_reception 'uk album chart'
 python main.py search

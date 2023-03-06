@@ -57,6 +57,10 @@ class BoolQuery:
         query_value = self._get_option(option)
         query_value.append({"term": {key: value}})
 
+    def add_match(self, option: QueryOption, key: str, value: str):
+        query_value = self._get_option(option)
+        query_value.append({"match": {key: value}})
+
     def save(self) -> None:
         with open(QUERY_PATH, "w") as f:
             json.dump(asdict(self), f, default=str, indent=4)

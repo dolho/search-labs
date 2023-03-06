@@ -9,6 +9,7 @@ from uuid import uuid4, UUID
 from enum import Enum
 from queries import BoolQuery, QueryOption
 from contextlib import contextmanager
+from pathlib import Path
 
 app = typer.Typer()
 
@@ -21,7 +22,7 @@ def connect_es() -> Generator[Elasticsearch, None, None]:
         yield es
     finally:
         es: Elasticsearch
-        es.transport.close()
+        # es.transport.close()
 
 
 @app.command()
@@ -29,11 +30,18 @@ def index_document(
     album_name: str = typer.Option(...),
     release_date: datetime = typer.Option(...),
     musicians: list[str] = typer.Option(...),
-    box_office: int = typer.Option(...)
+    box_office: int = typer.Option(...),
+    text_path: Path = typer.Option(...),
 ) -> None:
     with connect_es() as es:
+        res = []
+        for path in ("description.txt", "critical_reception.txt", "additional_notes.txt"):
+            with open(text_path / path, "r") as f:
+                res.append(f.read())
+
         document = asdict(
-            Album(album_name=album_name, release_date=release_date.date(), musicians=musicians, box_office=box_office)
+            Album(album_name=album_name, release_date=release_date.date(), musicians=musicians, box_office=box_office,
+                  description=res[0], critical_reception=res[1], additional_notes=res[2])
         )
         del document['_id']
         response = es.index(index=INDEX, id=str(uuid4()), document=document)
@@ -42,8 +50,50 @@ def index_document(
 
 @app.command()
 def set_mapping(force_delete: bool = typer.Option(default=False)):
+    analyzer = {
+        "analysis": {
+            "filter": {
+                "english_stop": {
+                    "type": "stop",
+                    "stopwords": "_english_"
+                },
+                "english_keywords": {
+                    "type": "keyword_marker",
+                    "keywords": ["example"]
+                },
+                "english_stemmer": {
+                    "type": "stemmer",
+                    "language": "english"
+                },
+                "english_possessive_stemmer": {
+                    "type": "stemmer",
+                    "language": "possessive_english"
+                }
+            },
+            "analyzer": {
+                "custom_wikipedia_analyzer": {
+                    "tokenizer": "standard",
+                    "char_filter": [
+                        "wikipedia_symbols"
+                    ],
+                    "filter": [
+                        "lowercase",
+                        "english_possessive_stemmer",
+                        "english_stop",
+                        "english_stemmer"
+                    ]
+                }
+            },
+            "char_filter": {
+                "wikipedia_symbols": {
+                    "type": "pattern_replace",
+                    "pattern": "\[\d+\]",
+                    "replacement": " "
+                },
+            }
+        }
+    }
     mapping = {
-        "mappings": {
             "properties": {
                 "album_name": {
                     "type": "keyword"
@@ -56,14 +106,26 @@ def set_mapping(force_delete: bool = typer.Option(default=False)):
                 },
                 "release_date": {
                     "type": "date"
+                },
+                "description": {
+                    "type": "text",
+                    "analyzer": "standard"
+                },
+                "critical_reception": {
+                    "type": "text",
+                    "analyzer": "custom_wikipedia_analyzer"
+                },
+                "additional_notes": {
+                    "type": "text",
+                    "analyzer": "english"
                 }
             }
         }
-    }
     with connect_es() as es:
+        es: Elasticsearch
         if force_delete:
             es.options(ignore_status=[400, 404]).indices.delete(index=INDEX)
-        es.indices.create(index=INDEX, body=mapping)
+        es.indices.create(index=INDEX, mappings=mapping, settings=analyzer)
 
 
 @app.command()
@@ -119,16 +181,28 @@ def add_term(
         query: BoolQuery
         query.add_term(option, key, value)
 
+@app.command()
+def add_match(
+        option: QueryOption = typer.Argument(...), key: str = typer.Argument(...), value: str = typer.Argument(...)
+):
+    with BoolQuery.load() as query:
+        query: BoolQuery
+        query.add_match(option, key, value)
 
 @app.command()
-def search():
+def search(display_texts: bool = typer.Option(default=False)):
     with BoolQuery.load() as query:
         query: BoolQuery
         search_query = query.to_dict()
         with connect_es() as es:
             res = es.search(index=INDEX, query=search_query)
             for hit in res['hits']['hits']:
-                print(Album(**hit['_source'], _id=hit['_id']))
+                album = Album(**hit['_source'], _id=hit['_id'], _score=hit['_score'])
+                if not display_texts:
+                    album.description = ""
+                    album.additional_notes = ""
+                    album.critical_reception = ""
+                print(album)
 
 
 @app.command()
